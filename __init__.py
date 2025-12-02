@@ -66,8 +66,8 @@ def meteo():
     return jsonify(results=results)
 
 @app.route("/contact/")
-def contact():
-    return render_template("contact.html")
+def MaPremiereAPI():
+    return "<h2>Ma page de contact</h2>"
 
                                                                                                                                        
 @app.route('/')
