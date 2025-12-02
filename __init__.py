@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template_string, render_template, jsonify
 from flask import render_template
 from flask import json
@@ -66,10 +67,6 @@ def commits():
 @app.route("/commits-graph/")
 def commits_graph():
     return render_template("commits.html")
-
-@app.route("/contact/")
-def MaPremiereAPI():
-    return "<h2>Ma page de contact</h2>"
-
+  
 if __name__ == "__main__":
   app.run(debug=True)
