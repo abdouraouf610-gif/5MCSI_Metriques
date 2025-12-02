@@ -5,53 +5,11 @@ from datetime import datetime
 from urllib.request import urlopen
 import sqlite3
                                                                                                                                        
-app = Flask(__name__)  
+app = Flask(__name__)
 
-import json
-from urllib.request import urlopen
-from datetime import datetime
-from flask import jsonify, render_template
-
-@app.route('/commits/')
-def commits():
-    # Récupération des commits depuis le repo d'origine
-    response = urlopen("https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits")
-    raw = response.read()
-    json_content = json.loads(raw.decode("utf-8"))
-
-    # Dictionnaire : minute → nombre de commits
-    minute_counts = {}
-
-    for commit in json_content:
-        date_string = commit["commit"]["author"]["date"]  # ex "2024-02-11T11:57:27Z"
-
-        # Extraire la minute
-        date_obj = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%SZ")
-        minute = date_obj.minute  # ex 57
-
-        # Compter les commits par minute
-        if minute not in minute_counts:
-            minute_counts[minute] = 1
-        else:
-            minute_counts[minute] += 1
-
-    # Transformer en tableau exploitable par Google Charts
-    results = [{"minute": m, "count": c} for m, c in minute_counts.items()]
-
-    return jsonify(results=results)
-
-@app.route("/commits_graph/")
-def commits_graph():
-    return render_template("commits_graph.html")
-
-
-@app.route("/histogramme/")
-def histo():
-    return render_template("histogramme.html")
-
-@app.route("/rapport/")
-def mongraphique():
-    return render_template("graphique.html")
+@app.route("/contact/")
+def MaPremiereAPI():
+    return render_template("contact.html")
 
 @app.route('/tawarano/')
 def meteo():
@@ -61,20 +19,57 @@ def meteo():
     results = []
     for list_element in json_content.get('list', []):
         dt_value = list_element.get('dt')
-        temp_day_value = list_element.get('main', {}).get('temp') - 273.15 # Conversion de Kelvin en °c 
+        temp_day_value = list_element.get('main', {}).get('temp') - 273.15  # Conversion Kelvin en °C
         results.append({'Jour': dt_value, 'temp': temp_day_value})
-    return jsonify(results=results)
-
-@app.route("/contact/")
-def contact():
-    return render_template("contact.html")
-
+    return jsonify(results=results)                                                                                                            
                                                                                                                                        
 @app.route('/')
 def hello_world():
-    return render_template('hello.html') #Comm
+    return render_template('hello.html')
+
+@app.route("/rapport/")
+def mongraphique():
+    return render_template("graphique.html")
+
+@app.route("/histogramme/")
+def histogramme():
+    return render_template("histogramme.html")
+
+@app.route('/commits/')
+def commits():
+    # Remplacez 'VOTRE-USERNAME' et 'VOTRE-REPO' par vos vraies valeurs
+    # Exemple : https://api.github.com/repos/ryan-dupont/5MCSI_Metriques/commits
+    response = urlopen('https://api.github.com/repos/ryanvaugarni/5MCSI_Metriques/commits')
+    raw_content = response.read()
+    json_content = json.loads(raw_content.decode('utf-8'))
+    
+    # Dictionnaire pour compter les commits par minute (0-59)
+    commits_per_minute = {}
+    for i in range(60):
+        commits_per_minute[i] = 0
+    
+    # Parcourir tous les commits
+    for commit in json_content:
+        date_string = commit['commit']['author']['date']
+        # Extraire les minutes de la date
+        date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+        minutes = date_object.minute
+        commits_per_minute[minutes] += 1
+    
+    # Préparer les résultats
+    results = []
+    for minute, count in commits_per_minute.items():
+        results.append({'minute': minute, 'count': count})
+    
+    return jsonify(results=results)
+
+@app.route("/commits-graph/")
+def commits_graph():
+    return render_template("commits.html")
+
 @app.route("/contact/")
 def MaPremiereAPI():
     return "<h2>Ma page de contact</h2>"
+
 if __name__ == "__main__":
-app.run(debug=True)
+  app.run(debug=True)
